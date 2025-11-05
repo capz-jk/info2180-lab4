@@ -1,19 +1,34 @@
-document.getElementById("searchBtn").addEventListener("click", function () {
-    const xhr = new XMLHttpRequest();
+const searchBtn = document.getElementById("searchBtn");
+const searchInput = document.getElementById("searchInput");
+const resultDiv = document.getElementById("result");
 
-    xhr.open("GET", "superheroes.php", true);
+// Function to perform AJAX request
+function searchHero() {
+  const query = searchInput.value.trim();
+  resultDiv.innerHTML = "<em>Loading...</em>";
 
-    xhr.onload = function () {
-        if (xhr.status === 200) {
-            alert(xhr.responseText); // show the <ul><li> list
-        } else {
-            alert("Error fetching superheroes.");
-        }
-    };
+  const safeQuery = encodeURIComponent(query);
 
-    xhr.onerror = function () {
-        alert("Request failed.");
-    };
+  fetch(`superheroes.php?query=${safeQuery}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Network error");
+      return response.text();
+    })
+    .then(data => {
+      resultDiv.innerHTML = data;
+    })
+    .catch(error => {
+      resultDiv.innerHTML = "<p style='color:red;'>Error fetching data.</p>";
+      console.error(error);
+    });
+}
 
-    xhr.send();
+// Trigger search on button click
+searchBtn.addEventListener("click", searchHero);
+
+// Trigger search when pressing Enter
+searchInput.addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    searchHero();
+  }
 });
